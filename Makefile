@@ -1,18 +1,9 @@
 CC:=$(CROSS_COMPILE)gcc
-CXX:=$(CROSS_COMPILE)g++
 
-EDCFLAGS:= -O2 -Wall -std=gnu11 -I include/ $(CFLAGS) $(CXXFLAGS)
+EDCFLAGS:= -O2 -Wall -std=gnu11 -I ./ $(CFLAGS)
 EDLDFLAGS:= -lpthread -lm $(LDFLAGS)
 
-HOSTNAME:=$(shell hostname) # used for hostname specific things
-# ifeq ($(HOSTNAME),spacehauc)
-#
-# endif
-SRC_DIR := src
-SRC_C := $(wildcard $(SRC_DIR)/*.c)
-COBJS = $(SRC_C:$(SRC_DIR)/%.c=$(SRC_DIR)/%.o)
-SRC_CPP := $(wildcard $(SRC_DIR)/*.cpp)
-CPPOBJS = $(SRC_CPP:$(SRC_DIR)/%.cpp=$(SRC_DIR)/%.o)
+COBJS := uhf_modem.o
 
 all: gs_test sh_test
 
@@ -26,12 +17,8 @@ objfiles: $(COBJS) $(CPPOBJS)
 %.o: %.c
 	$(CC) $(EDCFLAGS) -o $@ -c $<
 
-%.o: %.cpp
-	$(CXX) $(EDCFLAGS) -o $@ -c $<
-
 .PHONY: clean
 
 clean:
-	rm -vrf $(SRC_DIR)/*.o
 	rm -vrf *.o
 	rm -vrf *.out
