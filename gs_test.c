@@ -50,10 +50,10 @@ int main (int argc, char *argv[]){
     while(uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
     
     eprintf("What we sent vs what we got:");
-    memprintl_hex(wr_buf, UHF_MAX_FRAME_SIZE);
-    memprintl_hex(rd_buf, UHF_MAX_FRAME_SIZE);
+    memprintl_hex(payload, sizeof(payload));
+    memprintl_hex(rd_buf, sizeof(payload));
 
-    if (memcmp(wr_buf, rd_buf, UHF_MAX_FRAME_SIZE) == 0){
+    if (memcmp(payload, rd_buf, sizeof(payload)) == 0){
         eprintf("SUCCESS: Buffers are EQUAL.");
     } else {
         eprintf("FAILURE: Buffers are UNEQUAL");
