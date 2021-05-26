@@ -14,14 +14,12 @@ COBJS = $(SRC_C:$(SRC_DIR)/%.c=$(SRC_DIR)/%.o)
 SRC_CPP := $(wildcard $(SRC_DIR)/*.cpp)
 CPPOBJS = $(SRC_CPP:$(SRC_DIR)/%.cpp=$(SRC_DIR)/%.o)
 
-TARGET := test.out
-
 all: gs_test sh_test
 
 sh_test: sh_test.o $(COBJS) $(CPPOBJS)
-	$(CC) $< $(COBJS) $(EDLDFLAGS)
+	$(CC) -o $@.out $< $(COBJS) $(EDLDFLAGS)
 gs_test: gs_test.o $(COBJS) $(CPPOBJS)
-	$(CC) $< $(COBJS) $(EDLDFLAGS)
+	$(CC) -o $@.out $< $(COBJS) $(EDLDFLAGS)
 
 objfiles: $(COBJS) $(CPPOBJS)
 
@@ -34,6 +32,6 @@ objfiles: $(COBJS) $(CPPOBJS)
 .PHONY: clean
 
 clean:
-	rm -rf $(SRC_DIR)/*.o
-	rm -rf ./*.o
-	rm -rf $(TARGET)
+	rm -vrf $(SRC_DIR)/*.o
+	rm -vrf *.o
+	rm -vrf *.out
