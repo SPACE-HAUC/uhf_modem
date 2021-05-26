@@ -40,11 +40,10 @@ int main (int argc, char *argv[]){
     memset(rd_buf, 0x0, UHF_MAX_PAYLOAD_SIZE);
 
     eprintf("Attempting to read...");
-    while (uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != 1);
+    while (uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
 
     eprintf("Attempting to write...");
-    ssize_t out_sz = uhf_write(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE);
-    eprintf("Sent %d/%d bytes.", out_sz, UHF_MAX_PAYLOAD_SIZE);
+    while (uhf_write(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
     
     eprintf("Test complete.");
 

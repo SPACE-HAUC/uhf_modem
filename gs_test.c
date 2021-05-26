@@ -44,10 +44,10 @@ int main (int argc, char *argv[]){
     char payload[] = "One two three four five six seven eight nine ten";
 
     eprintf("Attempting to write...");
-    while (uhf_write(fd, wr_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_MAX_PAYLOAD_SIZE);
+    while (uhf_write(fd, payload, sizeof(payload)) != UHF_SUCCESS);
 
     eprintf("Attempting to read...");
-    while(uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != 1);
+    while(uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
     
     eprintf("What we sent vs what we got:");
     memprintl_hex(wr_buf, UHF_MAX_FRAME_SIZE);

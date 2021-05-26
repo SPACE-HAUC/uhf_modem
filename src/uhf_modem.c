@@ -213,9 +213,10 @@ ssize_t uhf_write(uhf_modem_t dev, char *buf, ssize_t len)
     if ((tries >= uhf_max_retries) && (wr_sz < UHF_MAX_FRAME_SIZE))
     {
         eprintf("Maxxed out retries (%d) and did not write entire frame (%d/%d).", tries, wr_sz, UHF_MAX_FRAME_SIZE);
+        return UHF_ERROR;
     }
 
-    return wr_sz;
+    return UHF_SUCCESS;
 }
 
 // ssize_t uhf_read2(uhf_modem_t dev, char *buf, ssize_t len){
