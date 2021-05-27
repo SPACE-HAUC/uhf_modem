@@ -10,9 +10,21 @@
 
 unsigned char uhf_max_retries = 0x10;
 volatile bool uhf_done = false;
-int UHF_SLEEP_TIME = 5; // 0.5 seconds of block on read by default
+int uhf_sleep_time = 5; // 0.5 seconds of block on read by default
 
-uhf_modem_t uhf_init(const char *sername, int baud)
+#define UHF_GUID 0x6f35
+#define UHF_TERMINATION 0x0d0a // CRLF
+typedef struct __attribute__((packed))
+{
+    uint16_t guid;
+    uint16_t crc;
+    uint8_t payload[UHF_MAX_PAYLOAD_SIZE];
+    uint16_t crc1;
+    uint16_t termination;
+} uhf_frame_t;
+#define UHF_MAX_FRAME_SIZE sizeof(uhf_frame_t)
+
+uhf_modem_t uhf_init(const char *sername)
 {
     int fd = -1;
     // check device name
@@ -35,8 +47,8 @@ uhf_modem_t uhf_init(const char *sername, int baud)
         eprintf("Error %d getting TTY attributes", errno);
         goto cleanup;
     }
-    cfsetospeed(tty, baud);
-    cfsetispeed(tty, baud);
+    cfsetospeed(tty, B9600);
+    cfsetispeed(tty, B9600);
     tty->c_cflag = (tty->c_cflag & ~CSIZE) | CS8; // 8-bit chars
     // disable IGNBRK for mismatched speed tests; otherwise receive break
     // as \000 chars
@@ -45,7 +57,7 @@ uhf_modem_t uhf_init(const char *sername, int baud)
                                        // no canonical processing
     tty->c_oflag = 0;                  // no remapping, no delays
     tty->c_cc[VMIN] = 63;              // read is blocking call
-    tty->c_cc[VTIME] = UHF_SLEEP_TIME; // 0.1 * GS_SLEEP_TIME seconds read timeout
+    tty->c_cc[VTIME] = uhf_sleep_time; // 0.1 * GS_SLEEP_TIME seconds read timeout
 
     tty->c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
@@ -123,6 +135,12 @@ retry:
             eprintf("Received GUID 0x%04x, not SPACE HAUC GUID", frame->guid);
             goto retry;
         }
+    }
+    if (uhf_done)
+    {
+        eprintf("UHF loop aborted");
+        retval = -UHF_ABORT;
+        goto ret;
     }
     if ((tries >= uhf_max_retries) && (rd_sz < UHF_MAX_FRAME_SIZE))
     {
@@ -209,6 +227,12 @@ ssize_t uhf_write(uhf_modem_t dev, char *buf, ssize_t len)
     }
 
     tcflush(dev, TCOFLUSH);
+
+    if (uhf_done)
+    {
+        eprintf("UHF loop aborted");
+        return -UHF_ABORT;
+    }
 
     if ((tries >= uhf_max_retries) && (wr_sz < UHF_MAX_FRAME_SIZE))
     {

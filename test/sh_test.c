@@ -23,42 +23,28 @@
 int main (int argc, char *argv[]){
     if (argc != 2)
     {
-        printf("Invocation: sudo ./gs_test.out <TTY device>\n\n");
+        printf("Invocation: sudo ./sh_test.out <TTY device>\n\n");
         return 0;
     }
     eprintf("Test beginning.");
 
-    uhf_modem_t fd = uhf_init(argv[1], B9600);
+    uhf_modem_t fd = uhf_init(argv[1]);
 
     if (fd < 3) {
         eprintf("FAILURE: fd is only %d.", fd);
         return -1;
     }
 
-    char wr_buf[UHF_MAX_PAYLOAD_SIZE];
     char rd_buf[UHF_MAX_PAYLOAD_SIZE];
 
-    memset(wr_buf, 0x0, UHF_MAX_PAYLOAD_SIZE);
     memset(rd_buf, 0x0, UHF_MAX_PAYLOAD_SIZE);
 
-    char payload[] = "One two three four five six seven eight nine ten";
+    eprintf("Attempting to read...");
+    while (uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
 
     eprintf("Attempting to write...");
-    while (uhf_write(fd, payload, sizeof(payload)) != UHF_SUCCESS);
-
-    eprintf("Attempting to read...");
-    while(uhf_read(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
+    while (uhf_write(fd, rd_buf, UHF_MAX_PAYLOAD_SIZE) != UHF_SUCCESS);
     
-    eprintf("What we sent vs what we got:");
-    memprintl_hex(payload, sizeof(payload));
-    memprintl_hex(rd_buf, sizeof(payload));
-
-    if (memcmp(payload, rd_buf, sizeof(payload)) == 0){
-        eprintf("SUCCESS: Buffers are EQUAL.");
-    } else {
-        eprintf("FAILURE: Buffers are UNEQUAL");
-    }
-
     eprintf("Test complete.");
 
     return 1;

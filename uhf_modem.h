@@ -2,7 +2,7 @@
  * @file uhf_modem.h
  * @author Sunip K. Mukherjee (sunipkmukherjee@gmail.com)
  * @brief 
- * @version 0.1
+ * @version 1.0
  * @date 2021-05-26
  * 
  * @copyright Copyright (c) 2021
@@ -13,7 +13,7 @@
 #define _UHF_MODEM_H
 
 #ifdef __cplusplus
-// extern "C" {
+extern "C" {
 #endif // __cplusplus
 #include <stdio.h>
 #include <stdint.h>
@@ -23,82 +23,70 @@
 #define WARN "\x1b[33m"
 #define ERR "\x1b[31m"
 #define CLR "\x1b[0m"
-#define eprintf(str, ...) \
-    { \
+#define eprintf(str, ...)                                                            \
+    {                                                                                \
         fprintf(stderr, "%s, %d: " str CLR "\n", __func__, __LINE__, ##__VA_ARGS__); \
-        fflush(stderr); \
+        fflush(stderr);                                                              \
     }
-#define eprintlf(str, ...) \
-    { \
+#define eprintlf(str, ...)                                                      \
+    {                                                                           \
         fprintf(stderr, "%s, %d: " str CLR, __func__, __LINE__, ##__VA_ARGS__); \
-        fflush(stderr); \
+        fflush(stderr);                                                         \
     }
 #endif // eprintf
 
-#define UHF_GUID 0x6f35
-#define UHF_TERMINATION 0xaaaa
 /**
- * @brief 
+ * @brief Maximum size of UHF frame payload
  * 
  */
 #define UHF_MAX_PAYLOAD_SIZE 56
 /**
- * @brief 
+ * @brief UHF modem device (file descriptor)
  * 
  */
 typedef int uhf_modem_t;
 /**
- * @brief 
- * 
- * @return typedef struct 
- */
-typedef struct __attribute__((packed))
-{
-    uint16_t guid;
-    uint16_t crc;
-    uint8_t payload[UHF_MAX_PAYLOAD_SIZE];
-    uint16_t crc1;
-    uint16_t termination;
-} uhf_frame_t;
-/**
- * @brief 
+ * @brief Maximum number of retries for UHF operation (0x0 -- 0xff)
  * 
  */
 extern unsigned char uhf_max_retries;
 /**
- * @brief 
+ * @brief Read/write blocking time in units of 100 ms.
  * 
  */
-extern int UHF_SLEEP_TIME;
-
+extern int uhf_sleep_time;
 /**
- * @brief 
+ * @brief This variable can be set to abort an UHF operation. Operation returns -UHF_ABORT.
  * 
  */
-#define UHF_MAX_FRAME_SIZE sizeof(uhf_frame_t)
-enum UHF_ERROR
+extern volatile bool uhf_done;
+/**
+ * @brief Enumeration of UHF device return values
+ * 
+ */
+enum UHF_RETVALS
 {
-    UHF_ERROR = -1,
-    UHF_TOUT = 0,
-    UHF_SUCCESS = 1,
-    UHF_CRC_INVALID = 2,
-    UHF_NOT_FULL_FRAME = 3
+    UHF_ERROR = -1,         //!< UHF operation error
+    UHF_TOUT = 0,           //!< UHF operation timeout
+    UHF_SUCCESS = 1,        //!< UHF operation success
+    UHF_CRC_INVALID = 2,    //!< UHF CRC invalid
+    UHF_NOT_FULL_FRAME = 3, //!< UHF full frame not received
+    UHF_ABORT = 4           //!< uhf_done was set to abort the operation
 };
 /**
- * @brief 
+ * @brief Open a serial device as UHF modem
  * 
- * @param sername 
- * @param baud 
+ * @param sername Pointer to serial device name string. The serial device is opened at baud 9600.
  * @return uhf_modem_t 
  */
-uhf_modem_t uhf_init(const char *sername, int baud);
+uhf_modem_t uhf_init(const char *sername);
 /**
- * @brief 
+ * @brief Read data from UHF serial
  * 
- * @param dev 
- * @param buf 
- * @param len 
- * @return int 
+ * @param dev UHF device
+ * @param buf Input buffer
+ * @param len Length of input buffer (has to be equal or greater than UHF_MAX_PAYLOAD_SIZE)
+ * @return int UHF_SUCCESS (1) on success, UHF_TOUT (0) on timeout, negative on error
  */
 int uhf_read(uhf_modem_t dev, char *buf, ssize_t len);
 /**
@@ -106,14 +94,14 @@ int uhf_read(uhf_modem_t dev, char *buf, ssize_t len);
  * 
  * @param dev UHF device
  * @param buf Output buffer
- * @param len Length 
- * @return int 
+ * @param len Length (has to be smaller or equal to UHF_MAX_PAYLOAD_SIZE)
+ * @return int UHF_SUCCESS (1) on success, UHF_TOUT (0) on timeout, negative on error
  */
 ssize_t uhf_write(uhf_modem_t dev, char *buf, ssize_t len);
 /**
  * @brief Close a UHF device
  * 
- * @param dev UHF device pointer
+ * @param dev UHF device
  */
 void uhf_destroy(uhf_modem_t dev);
 
@@ -154,7 +142,7 @@ static inline uint16_t crc16(unsigned char *data_p, uint16_t length)
     return (crc);
 }
 #ifdef __cplusplus
-// }
+}
 #endif //__cplusplus
 
 #endif // _UHF_MODEM_H
