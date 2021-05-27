@@ -17,6 +17,7 @@ extern "C" {
 #endif // __cplusplus
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifndef eprintf
 #define NOTIFY "\x1b[32m"
