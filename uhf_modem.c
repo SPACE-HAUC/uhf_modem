@@ -126,12 +126,14 @@ retry:
     rd_sz = 0;
     // start reading from serial, check for GUID
     while (read(dev, tmp, 1) != 1); // read 1 byte
+    eprintf("Byte 0: 0x%02x", tmp[0]);
     if (tmp[0] == (char) UHF_GUID) // lower byte of header
     {
         while(read(dev, tmp + 1, 1));
     }
     else
         goto retry;
+    eprintf("Byte 1: 0x%02x", tmp[1]);
     if (tmp[1] != (char)(UHF_GUID >> 8)) // upper byte of header
         goto retry;
     while ((rd_sz < UHF_MAX_FRAME_SIZE - 2) && (tries++ < uhf_max_retries) && (!uhf_done))
