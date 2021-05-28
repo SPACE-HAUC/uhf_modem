@@ -107,8 +107,17 @@ int uhf_read(uhf_modem_t dev, char *buf, ssize_t len)
     uhf_frame_t frame[1];
     ssize_t rd_sz;
     unsigned char tries;
+    bool error = false;
 retry:
-    memset(frame, 0x0, 64);
+    if (error)
+    {
+        eprintf("Error, received frame:");
+        for (int i = 0; i < sizeof(uhf_frame_t); i++)
+            fprintf(stderr, "%02x", ((char *)frame)[i]);
+        fflush(stderr);
+        error = false;
+    }
+    memset(frame, 0x0, sizeof(uhf_frame_t));
     retval = UHF_ERROR;
     tmp = (char *)frame;
     tries = 0;
@@ -134,6 +143,7 @@ retry:
         { // What if we read 64 bytes of garbage? Do we retry forever?
             // received wrong GUID, reset to top
             eprintf("Received GUID 0x%04x, not SPACE HAUC GUID", frame->guid);
+            error = true;
             goto retry;
         }
     }
@@ -158,11 +168,13 @@ retry:
     if (frame->termination != UHF_TERMINATION)
     {
         eprintf("Received wrong termination 0x%04x", frame->termination); // not considered fatal as long as CRCs are equal
+        error = true;
     }
     if (frame->crc != frame->crc1)
     {
         // "Header and footer CRCs are not equivalent (0x%04x vs. 0x%04x)." <--
         eprintf("Received wrong CRC in header (0x%04x) and footer (0x%04x)", frame->crc, frame->crc1);
+        error = true;
         goto retry;
     }
     if (frame->crc == 0x660a)
