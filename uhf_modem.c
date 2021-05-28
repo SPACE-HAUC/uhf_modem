@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include "uhf_modem.h"
 
-unsigned char uhf_max_retries = 0x10;
+unsigned char uhf_max_retries = 0xff;
 volatile bool uhf_done = false;
 int uhf_sleep_time = 5; // 0.5 seconds of block on read by default
 
@@ -78,7 +78,8 @@ cleanup:
     close(fd);
 ret:
     if (uhf_max_retries == 0)
-        uhf_max_retries = 0x40;
+        uhf_max_retries = 0xff;
+    tcflush(fd, TCIOFLUSH);
     return (uhf_modem_t)fd;
 }
 
