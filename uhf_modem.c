@@ -136,7 +136,7 @@ retry:
         goto retry;
     while ((rd_sz < UHF_MAX_FRAME_SIZE - 2) && (tries++ < uhf_max_retries) && (!uhf_done))
     {
-        ssize_t _rd_sz = read(dev, tmp + rd_sz, UHF_MAX_FRAME_SIZE - 2 - rd_sz);
+        ssize_t _rd_sz = read(dev, tmp + rd_sz + 2, UHF_MAX_FRAME_SIZE - 2 - rd_sz);
         if (_rd_sz == -1) // Error
         {
             eprintf("Error reading data");
