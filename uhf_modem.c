@@ -124,16 +124,19 @@ retry:
     tmp = (char *)frame;
     tries = 0;
     rd_sz = 0;
-    // start reading from serial
-    while ((rd_sz < UHF_MAX_FRAME_SIZE) && (tries++ < uhf_max_retries) && (!uhf_done))
+    // start reading from serial, check for GUID
+    while (read(dev, tmp, 1) != 1); // read 1 byte
+    if (tmp[0] == (char) UHF_GUID) // lower byte of header
     {
-        if ((rd_sz >= 3) && (tmp[0] == 'O') && (tmp[1] == 'K') && (tmp[2] == '+')) // check for OK+ which would indicate PIPE mode, in that case reset
-        {
-            eprintf("PIPE command received, resetting to read data!");
-            rd_sz = 0;
-            tries = 0;
-        }
-        ssize_t _rd_sz = read(dev, tmp + rd_sz, UHF_MAX_FRAME_SIZE - rd_sz);
+        while(read(dev, tmp + 1, 1));
+    }
+    else
+        goto retry;
+    if (tmp[1] != (char)(UHF_GUID >> 8)) // upper byte of header
+        goto retry;
+    while ((rd_sz < UHF_MAX_FRAME_SIZE - 2) && (tries++ < uhf_max_retries) && (!uhf_done))
+    {
+        ssize_t _rd_sz = read(dev, tmp + rd_sz, UHF_MAX_FRAME_SIZE - 2 - rd_sz);
         if (_rd_sz == -1) // Error
         {
             eprintf("Error reading data");
@@ -141,13 +144,6 @@ retry:
             goto ret;
         }
         rd_sz += _rd_sz;
-        if ((rd_sz == 4) && (frame->guid != UHF_GUID))
-        { // What if we read 64 bytes of garbage? Do we retry forever?
-            // received wrong GUID, reset to top
-            eprintf("Received GUID 0x%04x, not SPACE HAUC GUID", frame->guid);
-            error = true;
-            goto retry;
-        }
     }
     if (uhf_done)
     {
