@@ -56,7 +56,7 @@ uhf_modem_t uhf_init(const char *sername)
     tty->c_lflag = 0;                  // no signaling chars, no echo,
                                        // no canonical processing
     tty->c_oflag = 0;                  // no remapping, no delays
-    tty->c_cc[VMIN] = 63;              // read is blocking call
+    tty->c_cc[VMIN] = 0;               // read is not blocking on bytes
     tty->c_cc[VTIME] = uhf_sleep_time; // 0.1 * GS_SLEEP_TIME seconds read timeout
 
     tty->c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
@@ -115,7 +115,7 @@ retry:
     // start reading from serial
     while ((rd_sz < UHF_MAX_FRAME_SIZE) && (tries++ < uhf_max_retries) && (!uhf_done))
     {
-        if ((rd_sz == 3) && (tmp[0] == 'O') && (tmp[1] == 'K') && (tmp[2] == '+')) // check for OK+ which would indicate PIPE mode, in that case reset
+        if ((rd_sz >= 3) && (tmp[0] == 'O') && (tmp[1] == 'K') && (tmp[2] == '+')) // check for OK+ which would indicate PIPE mode, in that case reset
         {
             eprintf("PIPE command received, resetting to read data!");
             rd_sz = 0;
