@@ -116,7 +116,8 @@ retry:
             fprintf(stderr, "%02x", ((char *)frame)[i]);
         fflush(stderr);
         error = false;
-        tcflush(dev, TCIFLUSH);
+        char tmpval[64];
+        while(read(dev, tmpval, sizeof(tmpval)) != 0); // manually flush input buffer
     }
     memset(frame, 0x0, sizeof(uhf_frame_t));
     retval = UHF_ERROR;
