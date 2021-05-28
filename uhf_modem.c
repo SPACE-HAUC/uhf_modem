@@ -129,7 +129,7 @@ retry:
     eprintf("Byte 0: 0x%02x", tmp[0]);
     if (tmp[0] == (char) UHF_GUID) // lower byte of header
     {
-        while(read(dev, tmp + 1, 1));
+        while(read(dev, tmp + 1, 1) != 1);
     }
     else
         goto retry;
