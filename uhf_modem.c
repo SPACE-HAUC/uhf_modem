@@ -136,9 +136,10 @@ retry:
     eprintf("Byte 1: 0x%02x", tmp[1]);
     if (tmp[1] != (char)(UHF_GUID >> 8)) // upper byte of header
         goto retry;
-    while ((rd_sz < UHF_MAX_FRAME_SIZE - 2) && (tries++ < uhf_max_retries) && (!uhf_done))
+    rd_sz += 2; // read the first two bytes
+    while ((rd_sz < UHF_MAX_FRAME_SIZE) && (tries++ < uhf_max_retries) && (!uhf_done))
     {
-        ssize_t _rd_sz = read(dev, tmp + rd_sz + 2, UHF_MAX_FRAME_SIZE - 2 - rd_sz);
+        ssize_t _rd_sz = read(dev, tmp + rd_sz, UHF_MAX_FRAME_SIZE - rd_sz);
         if (_rd_sz == -1) // Error
         {
             eprintf("Error reading data");
