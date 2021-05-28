@@ -118,6 +118,7 @@ retry:
         error = false;
         char tmpval[64];
         while(read(dev, tmpval, sizeof(tmpval)) != 0); // manually flush input buffer
+        return -UHF_CRC_INVALID;
     }
     memset(frame, 0x0, sizeof(uhf_frame_t));
     retval = UHF_ERROR;
