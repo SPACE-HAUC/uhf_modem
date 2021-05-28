@@ -50,7 +50,7 @@ typedef int uhf_modem_t;
  * @brief Maximum number of retries for UHF operation (0x0 -- 0xff)
  * 
  */
-extern unsigned char uhf_max_retries;
+extern unsigned int uhf_max_retries;
 /**
  * @brief Read/write blocking time in units of 100 ms.
  * 
