@@ -235,7 +235,8 @@ ssize_t uhf_write(uhf_modem_t dev, char *buf, ssize_t len)
         else
         {
             eprintf("Error writing data.");
-            break;
+            tcflush(dev, TCOFLUSH); // flush whatever is in the buffer
+            return UHF_ERROR;
         }
     }
 
